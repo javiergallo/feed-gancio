@@ -29,12 +29,25 @@ cd feed-gancio/
 
 Then, for an English feed, just pass feed URL followed by Gancio URL:
 ```
-PYTHONPATH="." poetry run typer feed-gancio.py run https://news.mit.edu/rss/feed https://vamosjuntes.com.ar/api/events/
+PYTHONPATH=. poetry run typer feed-gancio.py run https://news.mit.edu/rss/feed https://vamosjuntes.com.ar/api/events/
 ```
 
 For a Spanish feed, add environment file:
 ```
-PYTHONPATH="." poetry run typer feed-gancio.py run https://ffyh.unc.edu.ar/ciffyh/feed/ https://vamosjuntes.com.ar/api/events/ --env-file es.env
+PYTHONPATH=. poetry run typer feed-gancio.py run https://ffyh.unc.edu.ar/ciffyh/feed/ https://vamosjuntes.com.ar/api/events/ --env-file es.env
+```
+
+## Development
+
+### Running tests
+
+```
+PYTHONPATH=. poetry run pytest
+```
+
+To show stdout:
+```
+PYTHONPATH=. poetry run pytest -s
 ```
 
 ## Help
