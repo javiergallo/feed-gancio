@@ -25,7 +25,7 @@ def main(
         prompt_context_max_length=config.prompt_context_max_length
     )
     upcoming_schedulable_events = download_upcoming_schedulable_events(
-        config, classifier, llm, feed_url, gancio_url, 
+        config, classifier, llm, feed_url
     )
     send_events_to_gancio(
         upcoming_schedulable_events, gancio_url, interactive=True

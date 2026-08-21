@@ -111,7 +111,7 @@ def extract_datetime(config: Config, llm, text: str) -> datetime.datetime:
 
 
 def download_upcoming_schedulable_events(
-    config: Config, classifier, llm, feed_url: str, gancio_url: str # cache_file_path: str = FILE_PATH
+    config: Config, classifier, llm, feed_url: str, # cache_file_path: str = FILE_PATH
 ) -> List[dict]:
     events_data = []
     
