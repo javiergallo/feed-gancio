@@ -20,7 +20,7 @@ def flatten_hypertext(hypertext: str) -> str:
     Parse HTML and extract clean text.
     """
     soup = BeautifulSoup(hypertext, "html.parser")
-    return soup.get_text()
+    return soup.get_text(separator=" ")
 
 
 def is_schedulable_event(config: Config, classifier, text: str) -> bool:
@@ -35,7 +35,10 @@ def is_schedulable_event(config: Config, classifier, text: str) -> bool:
     labels = result.get("labels", [])
     scores = result.get("scores", [])
     logger.debug(list(zip(labels, scores)))
-    return labels[0] == config.schedulable_event_label and scores[0] >= 0.5
+    return (
+        labels[0] == config.schedulable_event_label and
+        scores[0] >= config.schedulable_event_min_score
+    )
 
 
 def extract_datetime_strs(config: Config, llm, text: str) -> Dict[str, str]:
@@ -134,7 +137,7 @@ def download_upcoming_schedulable_events(
         except AttributeError:
             entry_content = entry.description
         if entry_content:
-            logger.info(f"Analizing {repr(entry.title)}...")
+            logger.info(f"Analyzing {repr(entry.title)}...")
 
             hypertext = entry_content
             text = flatten_hypertext(hypertext)

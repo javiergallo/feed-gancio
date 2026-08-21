@@ -12,6 +12,7 @@ class Config(BaseSettings):
 
     locale: Optional[str] = None
     hypothesis_template: str = "This example is {}."
+    schedulable_event_min_score: float = 0.4
     schedulable_event_label: str ="schedulable event"
     other_candidate_labels: List[str] = ["news", "statement"]
     date_format: str = "%A, %B %d, %Y"
