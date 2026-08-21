@@ -21,9 +21,9 @@ class Config(BaseSettings):
     end_key: str = "end"
     datetime_strs_extraction_prompt_template: str = (
         "Today's {today_str}, it's {now_str}. "
-        "Extract start date-time, and "
-        "ending date-time if possible (empty string if not possible), "
-        "from the text below:\n\n{text}"
+        "The text below refers to a schedulable event. "
+        "Extract the event's start date-time, and ending date-time if possible "
+        "(empty string if not possible), from the text below:\n\n{text}"
     )
     datetime_extraction_prompt_template: str = (
         "Today's {today_str}, it's {now_str}. "
