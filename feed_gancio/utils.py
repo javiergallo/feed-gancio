@@ -112,6 +112,39 @@ def extract_datetime(config: Config, llm, text: str) -> datetime.datetime:
     )
 
 
+def make_event(
+    config: Config,
+    title: str,
+    link: str,
+    hypertext: str,
+    start: datetime.datetime,
+    end: Optional[datetime.datetime]
+) -> dict:
+    event_data = {
+        "title": title,
+        "description": hypertext,
+        "start_datetime": int(start.timestamp()),
+        "online_locations": [link,],
+    }
+    if end:
+        assert start <= end
+        event_data["end_datetime"] = int(end.timestamp()),
+
+    soup = BeautifulSoup(hypertext, "html.parser")
+    image = soup.select_one(config.image_selector)
+    if image:
+        event_data.pop("online_locations", None)
+        event_data.update(
+            {
+                "image_url": image.get("src"),
+                "image_name": title,
+                "image_focalpoint": [[0, 0]],
+                "online_locations[]": link,
+            }
+        )
+    return event_data
+
+
 def download_upcoming_schedulable_events(
     config: Config, classifier, llm, feed_url: str
 ) -> List[dict]:
@@ -157,29 +190,9 @@ def download_upcoming_schedulable_events(
                 if start < now:
                     logger.info("Event has already began or it's finished.")
                 else:
-                    event_data = {
-                        "title": entry.title,
-                        "description": hypertext,
-                        "start_datetime": int(start.timestamp()),
-                        "online_locations": [entry.link,],
-                    }
-                    if end:
-                        assert start <= end
-                        event_data["end_datetime"] = int(end.timestamp()),
-                    
-                    soup = BeautifulSoup(hypertext, "html.parser")
-                    image = soup.select_one(config.image_selector)
-                    if image:
-                        event_data.pop("online_locations", None)
-                        event_data.update(
-                            {
-                                "image_url": image.get("src"),
-                                "image_name": entry.title,
-                                "image_focalpoint": [[0, 0]],
-                                "online_locations[]": entry.link,
-                            }
-                        )
-
+                    event_data = make_event(
+                        config, entry.title, entry.link, hypertext, start, end
+                    )
                     events_data.append(event_data)
                     logger.info("Event downloaded.")
                     # break
