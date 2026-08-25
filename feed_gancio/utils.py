@@ -1,8 +1,10 @@
 import dateparser
 import datetime
 import feedparser
+import io
 import json
 import logging
+import mimetypes
 import os
 import requests
 import typer
@@ -172,16 +174,24 @@ def download_upcoming_schedulable_events(
                     
                     soup = BeautifulSoup(hypertext, "html.parser")
                     image = soup.select_one(config.image_selector)
-                    #if image:
-                    #    event_data["image_url"] = image.get("src")
+                    if image:
+                        event_data.update(
+                            {
+                                "image_url": image.get("src"),
+                                "image_name": entry.title,
+                                "image_focalpoint": [[0, 0]],
+                            }
+                        )
 
                     events_data.append(event_data)
                     logger.info("Event downloaded.")
+                    break
 
             else:
                 logger.info("Text doesn't refer to a schedulable event.")
         else:
             logger.warning("There's no content")
+
 
     return events_data
 
@@ -189,9 +199,29 @@ def download_upcoming_schedulable_events(
 def send_event_to_gancio(event: dict, gancio_url: str):
     logger.info(f"Scheduling {repr(event['title'])}...")
 
-    headers = {"Content-Type": "application/json"}
-
-    response = requests.post(gancio_url, headers=headers, json=event)
+    try:
+        image_url = event.pop("image_url")
+    except KeyError:
+        logger.info("Sending event without an image...")
+        headers = {"Content-Type": "application/json"}
+        response = requests.post(gancio_url, headers=headers, json=event)
+    else:
+        logger.info("Sending event with an image...")
+        image_response = requests.get(image_url)
+        image_mime_type = image_response.headers.get("Content-Type")
+        image_extension = mimetypes.guess_extension(image_mime_type)
+        image_data = (
+            f"image{image_extension}",
+            io.BytesIO(image_response.content),
+            image_mime_type
+        )
+        response = requests.post(
+            gancio_url,
+            data=event,
+            files=[
+                ("image", image_data)
+            ],
+        )
 
     logger.debug(f"Response status code: {response.status_code}")
     logger.debug(response.json())
