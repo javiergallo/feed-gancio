@@ -169,7 +169,7 @@ def download_upcoming_schedulable_events(
                         "title": entry.title,
                         "description": hypertext,
                         "start_datetime": int(start.timestamp()),
-                        "online_locations": [entry.link],  # FIXME
+                        "online_locations": [entry.link,],
                     }
                     if end:
                         assert start <= end
@@ -178,17 +178,19 @@ def download_upcoming_schedulable_events(
                     soup = BeautifulSoup(hypertext, "html.parser")
                     image = soup.select_one(config.image_selector)
                     if image:
+                        event_data.pop("online_locations", None)
                         event_data.update(
                             {
                                 "image_url": image.get("src"),
                                 "image_name": entry.title,
                                 "image_focalpoint": [[0, 0]],
+                                "online_locations[]": entry.link,
                             }
                         )
 
                     events_data.append(event_data)
                     logger.info("Event downloaded.")
-                    break
+                    # break
 
             else:
                 logger.info("Text doesn't refer to a schedulable event.")
