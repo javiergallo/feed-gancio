@@ -144,7 +144,10 @@ def download_upcoming_schedulable_events(
             hypertext = entry_content
             text = flatten_hypertext(hypertext)
 
-            if is_schedulable_event(config, classifier, text):
+            if (
+                config.assume_schedulable_event or
+                is_schedulable_event(config, classifier, text)
+            ):
                 datetime_strs = extract_datetime_strs(config, llm, text)
                 logger.debug(datetime_strs)
 
