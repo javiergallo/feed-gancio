@@ -113,26 +113,18 @@ def extract_datetime(config: Config, llm, text: str) -> datetime.datetime:
 
 
 def download_upcoming_schedulable_events(
-    config: Config, classifier, llm, feed_url: str, # cache_file_path: str = FILE_PATH
+    config: Config, classifier, llm, feed_url: str
 ) -> List[dict]:
     events_data = []
     
     # Parse the RSS feed
+    logger.info(f"Parsing feed from {feed_url}")
     feed = feedparser.parse(feed_url)
-
-    # if not os.path.isfile(cache_file_path):
-    #     # Download the remote RSS feed content and save it to a file
-    #     logger.info("Downloading feed from %s...", feed_url)
-    #     urllib.request.urlretrieve(feed_url, cache_file_path)
-
-    # # Parse the locally stored file using feedparser
-    # logger.info(f"Parsing feed from local file: {cache_file_path}")
-    # feed = feedparser.parse(cache_file_path)
 
     # Print feed metadata
     logger.info(f"Feed metadata: {repr(feed.feed.title)} ({feed.feed.link})")
 
-    # Loop through the feed entries (limiting to the top 5)
+    # Loop through the feed entries
     for entry in feed.entries:
         try:
             entry_content = entry.content[0].value
