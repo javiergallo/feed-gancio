@@ -16,7 +16,9 @@ Use FeedGancio to feed a Gancio instance with events from a RSS source, using
 
 ### Installing
 
-First, go to the root directory and download Llama (this is hardcoded, which
+First, use Git to clone the repository or simply download the files.
+
+Then, go to the root directory and download Llama (this is hardcoded, which
 means you won't be able to use another model... sorry):
 ```
 cd feed-gancio/
