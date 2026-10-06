@@ -1,41 +1,52 @@
-# Feed Gancio
+# FeedGancio
 
-TODO Simple overview of use/purpose.
+This document will guide you through the necessary steps to get FeedGancio up
+and running.
 
 ## Description
 
-TODO An in-depth paragraph about your project and overview of use.
+Use FeedGancio to feed a Gancio instance with events from a RSS source, using
+(sort of) a couple of intelligent language models that run locally.
 
 ## Getting Started
 
 ### Dependencies
 
-TODO
-* Describe any prerequisites, libraries, OS version, etc., needed before installing program.
-* ex. Windows 10
+* [Poetry](https://python-poetry.org/)
 
 ### Installing
 
-TODO
-* How/where to download your program
-* Any modifications needed to be made to files/folders
+First, go to the root directory and download Llama (this is hardcoded, which
+means you won't be able to use another model... sorry):
+```
+cd feed-gancio/
+wget https://huggingface.co/hugging-quants/Llama-3.2-3B-Instruct-Q8_0-GGUF/resolve/main/llama-3.2-3b-instruct-q8_0.gguf
+```
+
+Then:
+```
+poetry install
+```
 
 ### Executing program
 
-First:
+Go to the root directory:
 ```
 cd feed-gancio/
 ```
 
-Then, for an English feed, just pass feed URL followed by Gancio URL:
+Then, for an English feed, just pass feed URL followed by the Gancio instance URL:
 ```
 PYTHONPATH=. poetry run typer feed-gancio.py run https://news.mit.edu/rss/feed https://vamosjuntes.com.ar/api/events/
 ```
 
-For a Spanish feed, add environment file:
+For a Spanish feed, add an environment file:
 ```
 PYTHONPATH=. poetry run typer feed-gancio.py run https://ffyh.unc.edu.ar/ciffyh/feed/ https://vamosjuntes.com.ar/api/events/ --env-file es.env
 ```
+
+FeedGancio will do the best it can (it's not super smart) to detect and copy
+schedulable events from the RSS source to the Gancio instance.
 
 ## Development
 
@@ -53,30 +64,16 @@ PYTHONPATH=. poetry run pytest -s
 ## Help
 
 TODO
-Any advise for common problems or issues.
-```
-command to run if program contains helper info
-```
 
 ## Authors
 
-TODO
-Contributors names and contact info
-
-ex. Dominique Pizzie  
-ex. [@DomPizzie](https://twitter.com/dompizzie)
+[Javier Gallo](https://github.com/javiergallo)
 
 ## License
 
 TODO
-This project is licensed under the [NAME HERE] License - see the LICENSE.md file for details
 
 ## Acknowledgments
 
-TODO
-Inspiration, code snippets, etc.
-* [awesome-readme](https://github.com/matiassingers/awesome-readme)
-* [PurpleBooth](https://gist.github.com/PurpleBooth/109311bb0361f32d87a2)
-* [dbader](https://github.com/dbader/readme-template)
-* [zenorocha](https://gist.github.com/zenorocha/4526327)
-* [fvcproductions](https://gist.github.com/fvcproductions/1bfc2d4aecb01a834b46)
+Everyone in [Mariconear.social](https://mariconear.social/about),
+but specially [Sondra](https://mariconear.social/@Sondra).
