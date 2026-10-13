@@ -3,15 +3,14 @@ import datetime
 import feedparser
 import io
 import json
-import logging
 import mimetypes
-import os
 import requests
 import typer
-import urllib.request
 
 from bs4 import BeautifulSoup
+from llama_cpp import Llama
 from loguru import logger
+from transformers.pipelines.base import Pipeline
 from typing import Dict, List, Optional
 
 from feed_gancio.settings import Config
@@ -25,7 +24,9 @@ def flatten_hypertext(hypertext: str) -> str:
     return soup.get_text(separator=" ")
 
 
-def is_schedulable_event(config: Config, classifier, text: str) -> bool:
+def is_schedulable_event(
+    config: Config, classifier: Pipeline, text: str
+) -> bool:
     """
     Determine whether some text refers to a schedulable event.
     """
@@ -43,7 +44,9 @@ def is_schedulable_event(config: Config, classifier, text: str) -> bool:
     )
 
 
-def extract_datetime_strs(config: Config, llm, text: str) -> Dict[str, str]:
+def extract_datetime_strs(
+    config: Config, llm: Llama, text: str
+) -> Dict[str, str]:
     """
     Extract datetimes from schedulable event text.
     """
@@ -79,7 +82,9 @@ def extract_datetime_strs(config: Config, llm, text: str) -> Dict[str, str]:
     return content
 
 
-def extract_datetime(config: Config, llm, text: str) -> datetime.datetime:
+def extract_datetime(
+    config: Config, llm: Llama, text: str
+) -> datetime.datetime:
     """
     Extract datetime from text.
     """
@@ -146,7 +151,10 @@ def make_event(
 
 
 def download_upcoming_schedulable_events(
-    config: Config, classifier, llm, feed_url: str
+    config: Config,
+    classifier: Pipeline,
+    llm: Llama,
+    feed_url: str,
 ) -> List[dict]:
     events_data = []
     
