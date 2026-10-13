@@ -1,11 +1,14 @@
 from typing import List, Optional
 
+from pydantic import FilePath
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Config(BaseSettings):
     model_config = SettingsConfigDict()
 
+    classifier_model: str = "joeddav/xlm-roberta-large-xnli"
+    llama_model_path: FilePath = "./llama-3.2-3b-instruct-q8_0.gguf"
     prompt_context_max_length: int = 1024
     temperature: float = 0.0
     image_selector: str = "img"

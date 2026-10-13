@@ -21,9 +21,7 @@ def main(
     if config.locale is not None:
         locale.setlocale(locale.LC_TIME, config.locale)
 
-    classifier, llm = load_models(
-        prompt_context_max_length=config.prompt_context_max_length
-    )
+    classifier, llm = load_models(config)
     upcoming_schedulable_events = download_upcoming_schedulable_events(
         config, classifier, llm, feed_url
     )
