@@ -4,7 +4,7 @@ import os
 import pytest
 
 from feed_gancio.models import load_models
-from feed_gancio.utils import download_upcoming_schedulable_events
+from feed_gancio.utils import FeedEventDownloader, GancioEventSender
 from feed_gancio.settings import Config
 
 
@@ -18,10 +18,8 @@ def test_download_upcoming_events(n_upcoming_events: int):
     classifier, llm = load_models(config)
 
     cur_dir_path = os.path.dirname(os.path.abspath(__file__))
-    events_data = download_upcoming_schedulable_events(
-        config,
-        classifier,
-        llm,
+    feed_downloader = FeedEventDownloader(config, classifier, llm)
+    events_data = feed_downloader.download_upcoming_schedulable_events(
         feed_url=f"{cur_dir_path}/test-feed-{n_upcoming_events}.xml",
     )
 

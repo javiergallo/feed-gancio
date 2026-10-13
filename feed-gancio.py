@@ -4,10 +4,7 @@ import typer
 from typing import Annotated
 
 from feed_gancio.models import load_models
-from feed_gancio.utils import (
-    download_upcoming_schedulable_events,
-    send_events_to_gancio,
-)
+from feed_gancio.utils import FeedEventDownloader, GancioEventSender
 from feed_gancio.settings import Config
 
 
@@ -22,12 +19,11 @@ def main(
         locale.setlocale(locale.LC_TIME, config.locale)
 
     classifier, llm = load_models(config)
-    upcoming_schedulable_events = download_upcoming_schedulable_events(
-        config, classifier, llm, feed_url
-    )
-    send_events_to_gancio(
-        upcoming_schedulable_events, gancio_url, interactive=True
-    )
+    feed_downloader = FeedEventDownloader(config, classifier, llm)
+    events = feed_downloader.download_upcoming_schedulable_events(feed_url)
+
+    event_sender = GancioEventSender(gancio_url)
+    event_sender.send_events_to_gancio(events, interactive=True)
 
 
 if __name__ == "__main__":
