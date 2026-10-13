@@ -125,6 +125,7 @@ def make_event(
     start: datetime.datetime,
     end: Optional[datetime.datetime]
 ) -> dict:
+    """Build a Gancio event payload from the supplied event details."""
     event_data = {
         "title": title,
         "description": hypertext,
@@ -156,6 +157,7 @@ def download_upcoming_schedulable_events(
     llm: Llama,
     feed_url: str,
 ) -> List[dict]:
+    """Download future schedulable events from an RSS feed."""
     events_data = []
     
     # Parse the RSS feed
@@ -215,6 +217,7 @@ def download_upcoming_schedulable_events(
 
 
 def send_event_to_gancio(event: dict, gancio_url: str):
+    """Send one event to the Gancio endpoint."""
     logger.info(f"Scheduling {repr(event['title'])}...")
 
     try:
@@ -248,6 +251,7 @@ def send_event_to_gancio(event: dict, gancio_url: str):
 def send_events_to_gancio(
     events: List[dict], gancio_url: str, interactive: bool = False
 ):
+    """Send events to Gancio, optionally confirming each submission."""
     for event in events:
         if interactive:
             typer.echo(json.dumps(event, indent=4, default=str))
