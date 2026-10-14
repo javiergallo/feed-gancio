@@ -60,16 +60,21 @@ class FeedEventDownloader:
         """
         now = datetime.datetime.now()
         prompt = self.config.datetime_strs_extraction_prompt_template.format(
+            start_key=self.config.start_key,
+            end_key=self.config.end_key,
             today_str=now.strftime(self.config.date_format),
             now_str=now.strftime(self.config.time_format),
-            text=text,
         )
         logger.debug(prompt)
         response = self.llm.create_chat_completion(
             messages=[
                 {
-                    "role": "user",
+                    "role": "system",
                     "content": prompt[:self.config.prompt_context_max_length]
+                },
+                {
+                    "role": "user",
+                    "content": text,
                 }
             ],
             response_format={
@@ -101,13 +106,16 @@ class FeedEventDownloader:
         prompt = self.config.datetime_extraction_prompt_template.format(
             today_str=now.strftime(self.config.date_format),
             now_str=now.strftime(self.config.time_format),
-            text=text,
         )
         response = self.llm.create_chat_completion(
             messages=[
                 {
-                    "role": "user",
+                    "role": "system",
                     "content": prompt[:self.config.prompt_context_max_length]
+                },
+                {
+                    "role": "user",
+                    "content": text,
                 }
             ],
             response_format={

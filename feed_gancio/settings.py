@@ -24,12 +24,22 @@ class Config(BaseSettings):
     start_key: str = "start"
     end_key: str = "end"
     datetime_strs_extraction_prompt_template: str = (
+        "You are a helpful assistant that extracts date-time "
+        "information from text. You will be given a text that "
+        "refers to a schedulable event. You must extract the "
+        "event's start date-time, and ending date-time if "
+        "possible (empty string if not possible). You must "
+        "return the extracted information in a JSON object "
+        "with the following keys: "
+        "{start_key} and {end_key}. "
+        "The values of the keys must be strings. The date-time "
+        "strings must be in a format that can be parsed by "
+        "dateparser.parse(). "
         "Today's {today_str}, it's {now_str}. "
-        "The text below refers to a schedulable event. "
-        "Extract the event's start date-time, and ending date-time if possible "
-        "(empty string if not possible), from the text below:\n\n{text}"
     )
     datetime_extraction_prompt_template: str = (
+        "You are a helpful assistant that extracts date-time information "
+        "from text. You will be given a text that refers to date-time "
+        "information. You must extract the date-time, ISO formatted. "
         "Today's {today_str}, it's {now_str}. "
-        "Extract date-time from the following text, ISO formatted: {text}"
     )
