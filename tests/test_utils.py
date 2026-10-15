@@ -1,10 +1,9 @@
-import feedparser
 import locale
 import os
 import pytest
 
 from feed_gancio.models import load_models
-from feed_gancio.utils import FeedEventDownloader, GancioEventSender
+from feed_gancio.utils import FeedEventDownloader
 from feed_gancio.settings import Config
 
 
