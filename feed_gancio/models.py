@@ -8,6 +8,7 @@ from feed_gancio.settings import Config
 
 
 def load_models(config: Config) -> Tuple[Pipeline, Llama]:
+    """Load and return the event classifier and language model."""
     classifier = pipeline("zero-shot-classification", model=config.classifier_model)
     llm = Llama(
         model_path=str(config.llama_model_path),

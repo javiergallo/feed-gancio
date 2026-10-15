@@ -13,6 +13,7 @@ def main(
     gancio_url: str,
     env_file: Annotated[str, typer.Option()] = None,
 ):
+    """Download schedulable feed events and send them to Gancio."""
     config = Config() if env_file is None else Config(_env_file=env_file)
 
     if config.locale is not None:
