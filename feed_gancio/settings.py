@@ -17,7 +17,7 @@ class Config(BaseSettings):
     hypothesis_template: str = "This example is {}."
     assume_schedulable_event: bool = False
     schedulable_event_min_score: float = 0.4
-    schedulable_event_label: str ="schedulable event"
+    schedulable_event_label: str = "schedulable event"
     other_candidate_labels: List[str] = ["news", "statement"]
     date_format: str = "%A, %B %d, %Y"
     time_format: str = "%H hours and %M minutes"

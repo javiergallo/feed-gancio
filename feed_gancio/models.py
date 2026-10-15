@@ -8,9 +8,7 @@ from feed_gancio.settings import Config
 
 
 def load_models(config: Config) -> Tuple[Pipeline, Llama]:
-    classifier = pipeline(
-        "zero-shot-classification", model=config.classifier_model
-    )
+    classifier = pipeline("zero-shot-classification", model=config.classifier_model)
     llm = Llama(
         model_path=str(config.llama_model_path),
         chat_format="chatml",

@@ -26,6 +26,7 @@ def flatten_hypertext(hypertext: str) -> str:
 
 class FeedEventDownloader:
     """Download schedulable events from an RSS feed."""
+
     config: Config
     classifier: Pipeline
     llm: Llama
@@ -35,12 +36,13 @@ class FeedEventDownloader:
         self.classifier = classifier
         self.llm = llm
 
-
     def _is_schedulable_event(self, text: str) -> bool:
         """
         Determine whether some text refers to a schedulable event.
         """
-        candidate_labels = [self.config.schedulable_event_label] + self.config.other_candidate_labels
+        candidate_labels = [
+            self.config.schedulable_event_label
+        ] + self.config.other_candidate_labels
         hypothesis_template = self.config.hypothesis_template
         result = self.classifier(
             text, candidate_labels, hypothesis_template=hypothesis_template
@@ -49,10 +51,9 @@ class FeedEventDownloader:
         scores = result.get("scores", [])
         logger.debug(list(zip(labels, scores)))
         return (
-            labels[0] == self.config.schedulable_event_label and
-            scores[0] >= self.config.schedulable_event_min_score
+            labels[0] == self.config.schedulable_event_label
+            and scores[0] >= self.config.schedulable_event_min_score
         )
-
 
     def _extract_datetime_strs(self, text: str) -> Dict[str, str]:
         """
@@ -70,12 +71,12 @@ class FeedEventDownloader:
             messages=[
                 {
                     "role": "system",
-                    "content": prompt[:self.config.prompt_context_max_length]
+                    "content": prompt[: self.config.prompt_context_max_length],
                 },
                 {
                     "role": "user",
                     "content": text,
-                }
+                },
             ],
             response_format={
                 "type": "json_object",
@@ -83,7 +84,7 @@ class FeedEventDownloader:
                     "type": "object",
                     "properties": {
                         self.config.start_key: {"type": "string"},
-                        self.config.end_key: {"type": "string"}
+                        self.config.end_key: {"type": "string"},
                     },
                 },
             },
@@ -96,7 +97,6 @@ class FeedEventDownloader:
         assert self.config.start_key in content
 
         return content
-
 
     def _extract_datetime(self, text: str) -> datetime.datetime:
         """
@@ -111,12 +111,12 @@ class FeedEventDownloader:
             messages=[
                 {
                     "role": "system",
-                    "content": prompt[:self.config.prompt_context_max_length]
+                    "content": prompt[: self.config.prompt_context_max_length],
                 },
                 {
                     "role": "user",
                     "content": text,
-                }
+                },
             ],
             response_format={
                 "type": "json_object",
@@ -136,25 +136,26 @@ class FeedEventDownloader:
             content["iso_datetime"], settings={"RETURN_AS_TIMEZONE_AWARE": False}
         )
 
-
     def _make_event(
         self,
         title: str,
         link: str,
         hypertext: str,
         start: datetime.datetime,
-        end: Optional[datetime.datetime]
+        end: Optional[datetime.datetime],
     ) -> dict:
         """Build a Gancio event payload from the supplied event details."""
         event_data = {
             "title": title,
             "description": hypertext,
             "start_datetime": int(start.timestamp()),
-            "online_locations": [link,],
+            "online_locations": [
+                link,
+            ],
         }
         if end:
             assert start <= end
-            event_data["end_datetime"] = int(end.timestamp()),
+            event_data["end_datetime"] = (int(end.timestamp()),)
 
         soup = BeautifulSoup(hypertext, "html.parser")
         image = soup.select_one(self.config.image_selector)
@@ -170,11 +171,10 @@ class FeedEventDownloader:
             )
         return event_data
 
-
     def download_upcoming_schedulable_events(self, feed_url: str) -> List[dict]:
         """Download future schedulable events from an RSS feed."""
         events_data = []
-        
+
         # Parse the RSS feed
         logger.info(f"Parsing feed from {feed_url}")
         feed = feedparser.parse(feed_url)
@@ -194,9 +194,8 @@ class FeedEventDownloader:
                 hypertext = entry_content
                 text = flatten_hypertext(hypertext)
 
-                if (
-                    self.config.assume_schedulable_event or
-                    self._is_schedulable_event(text)
+                if self.config.assume_schedulable_event or self._is_schedulable_event(
+                    text
                 ):
                     datetime_strs = self._extract_datetime_strs(text)
                     logger.debug(datetime_strs)
@@ -227,7 +226,6 @@ class FeedEventDownloader:
             else:
                 logger.warning("There's no content")
 
-
         return events_data
 
 
@@ -248,9 +246,7 @@ class GancioEventSender:
         except KeyError:
             logger.info("Sending event without an image...")
             headers = {"Content-Type": "application/json"}
-            response = requests.post(
-                self.gancio_url, headers=headers, json=event
-            )
+            response = requests.post(self.gancio_url, headers=headers, json=event)
         else:
             logger.info("Sending event with an image...")
             image_response = requests.get(image_url)
@@ -259,23 +255,18 @@ class GancioEventSender:
             image_data = (
                 f"image{image_extension}",
                 io.BytesIO(image_response.content),
-                image_mime_type
+                image_mime_type,
             )
             response = requests.post(
                 self.gancio_url,
                 data=event,
-                files=[
-                    ("image", image_data)
-                ],
+                files=[("image", image_data)],
             )
 
         logger.debug(f"Response status code: {response.status_code}")
         logger.debug(response.json())
 
-
-    def send_events_to_gancio(
-        self, events: List[dict], interactive: bool = False
-    ):
+    def send_events_to_gancio(self, events: List[dict], interactive: bool = False):
         """Send events to Gancio, optionally confirming each submission."""
         for event in events:
             if interactive:
