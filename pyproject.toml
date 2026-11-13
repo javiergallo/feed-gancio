@@ -26,6 +26,13 @@ python-dotenv = "^1.2.3"
 pytest = "^9.1.1"
 pytest-mock = "^3.15.1"
 black = "^26.5.1"
+hypothesis = "^6.170.15"
+
+[tool.black]
+line-length = 79
+
+[tool.pytest.ini_options]
+markers = ["integration: tests that use real models or external components"]
 
 [build-system]
 requires = ["poetry-core"]
