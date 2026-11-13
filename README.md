@@ -61,6 +61,7 @@ the RSS source to the Gancio instance.
 
 ### Running tests
 
+To run all tests (both unit and integration tests):
 ```
 PYTHONPATH=. poetry run pytest
 ```
@@ -68,6 +69,16 @@ PYTHONPATH=. poetry run pytest
 To show stdout:
 ```
 PYTHONPATH=. poetry run pytest -s
+```
+
+To run integration tests only:
+```
+PYTHONPATH=. poetry run pytest -m integration
+```
+
+To run unit tests only:
+```
+PYTHONPATH=. poetry run pytest -m 'not integration'
 ```
 
 ## Help
