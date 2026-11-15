@@ -18,11 +18,17 @@ a couple of models that run locally.
 
 First, use Git to clone the repository or simply download the files.
 
-Then, go to the root directory and download Llama (version 3.2.3B is the default
-but you may download whatever you want and change the path via configuration):
+Then, go to the root directory and download Llama. Version 3.2.3B is the default
+but you may download whatever you want and change the path via configuration:
 ```
 cd feed-gancio/
 wget https://huggingface.co/hugging-quants/Llama-3.2-3B-Instruct-Q8_0-GGUF/resolve/main/llama-3.2-3b-instruct-q8_0.gguf
+```
+
+Version 3.2.1B is significantly smaller and could be an alternative, although I
+haven't tested it:
+```
+wget https://huggingface.co/hugging-quants/Llama-3.2-1B-Instruct-Q8_0-GGUF/resolve/main/llama-3.2-1b-instruct-q8_0.gguf
 ```
 
 Then:
