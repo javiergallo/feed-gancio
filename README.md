@@ -38,10 +38,7 @@ poetry install
 
 ### Configuring
 
-The environment variables are listed [here](feed_gancio/settings.py).
-Particularly, use `CLASSIFIER_MODEL` and `LLAMA_MODEL_PATH` (both strings) to
-override the default models (RSS entry classifier and language model,
-respectively).
+The environment variables are listed and described [here](docs/configuration.md).
 
 ### Executing program
 
@@ -85,6 +82,12 @@ PYTHONPATH=. poetry run pytest -m integration
 To run unit tests only:
 ```
 PYTHONPATH=. poetry run pytest -m 'not integration'
+```
+
+### Updating configuration document
+
+```
+PYTHONPATH=. poetry run pydantic-settings-export
 ```
 
 ## Help
