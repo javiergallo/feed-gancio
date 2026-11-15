@@ -1,4 +1,3 @@
-import dateparser
 import datetime
 import feedparser
 import io
@@ -11,8 +10,9 @@ from bs4 import BeautifulSoup
 from llama_cpp import Llama
 from loguru import logger
 from transformers.pipelines.base import Pipeline
-from typing import Dict, List, Optional
+from typing import List, Optional
 
+from feed_gancio.datetime_parsers import LlamaDatetimeParser
 from feed_gancio.settings import Config
 
 
@@ -29,12 +29,12 @@ class FeedEventDownloader:
 
     config: Config
     classifier: Pipeline
-    llm: Llama
+    datetime_parser: LlamaDatetimeParser
 
     def __init__(self, config: Config, classifier: Pipeline, llm: Llama):
         self.config = config
         self.classifier = classifier
-        self.llm = llm
+        self.datetime_parser = LlamaDatetimeParser(config, llm)
 
     def _is_schedulable_event(self, text: str) -> bool:
         """
@@ -53,87 +53,6 @@ class FeedEventDownloader:
         return (
             labels[0] == self.config.schedulable_event_label
             and scores[0] >= self.config.schedulable_event_min_score
-        )
-
-    def _extract_datetime_strs(self, text: str) -> Dict[str, str]:
-        """
-        Extract datetimes from schedulable event text.
-        """
-        now = datetime.datetime.now()
-        prompt = self.config.datetime_strs_extraction_prompt_template.format(
-            start_key=self.config.start_key,
-            end_key=self.config.end_key,
-            today_str=now.strftime(self.config.date_format),
-            now_str=now.strftime(self.config.time_format),
-        )
-        logger.debug(prompt)
-        response = self.llm.create_chat_completion(
-            messages=[
-                {
-                    "role": "system",
-                    "content": prompt[: self.config.prompt_context_max_length],
-                },
-                {
-                    "role": "user",
-                    "content": text,
-                },
-            ],
-            response_format={
-                "type": "json_object",
-                "schema": {
-                    "type": "object",
-                    "properties": {
-                        self.config.start_key: {"type": "string"},
-                        self.config.end_key: {"type": "string"},
-                    },
-                },
-            },
-            temperature=self.config.temperature,
-        )
-
-        content = json.loads(response["choices"][0]["message"]["content"])
-
-        assert isinstance(content, dict)
-        assert self.config.start_key in content
-
-        return content
-
-    def _extract_datetime(self, text: str) -> datetime.datetime:
-        """
-        Extract datetime from text.
-        """
-        now = datetime.datetime.now()
-        prompt = self.config.datetime_extraction_prompt_template.format(
-            today_str=now.strftime(self.config.date_format),
-            now_str=now.strftime(self.config.time_format),
-        )
-        response = self.llm.create_chat_completion(
-            messages=[
-                {
-                    "role": "system",
-                    "content": prompt[: self.config.prompt_context_max_length],
-                },
-                {
-                    "role": "user",
-                    "content": text,
-                },
-            ],
-            response_format={
-                "type": "json_object",
-                "schema": {
-                    "type": "object",
-                    "properties": {"iso_datetime": {"type": "string"}},
-                },
-            },
-            temperature=self.config.temperature,
-        )
-        content = json.loads(response["choices"][0]["message"]["content"])
-
-        assert isinstance(content, dict)
-        assert "iso_datetime" in content
-
-        return dateparser.parse(
-            content["iso_datetime"], settings={"RETURN_AS_TIMEZONE_AWARE": False}
         )
 
     def _make_event(
@@ -171,7 +90,9 @@ class FeedEventDownloader:
             )
         return event_data
 
-    def download_upcoming_schedulable_events(self, feed_url: str) -> List[dict]:
+    def download_upcoming_schedulable_events(
+        self, feed_url: str
+    ) -> List[dict]:
         """Download future schedulable events from an RSS feed."""
         events_data = []
 
@@ -180,7 +101,9 @@ class FeedEventDownloader:
         feed = feedparser.parse(feed_url)
 
         # Print feed metadata
-        logger.info(f"Feed metadata: {repr(feed.feed.title)} ({feed.feed.link})")
+        logger.info(
+            f"Feed metadata: {repr(feed.feed.title)} ({feed.feed.link})"
+        )
 
         # Loop through the feed entries
         for entry in feed.entries:
@@ -194,17 +117,13 @@ class FeedEventDownloader:
                 hypertext = entry_content
                 text = flatten_hypertext(hypertext)
 
-                if self.config.assume_schedulable_event or self._is_schedulable_event(
-                    text
+                if (
+                    self.config.assume_schedulable_event
+                    or self._is_schedulable_event(text)
                 ):
-                    datetime_strs = self._extract_datetime_strs(text)
-                    logger.debug(datetime_strs)
-
-                    start = datetime_strs.get(self.config.start_key)
-                    start = self._extract_datetime(start)
-
-                    end = datetime_strs.get(self.config.end_key)
-                    end = end and self._extract_datetime(end)
+                    datetimes = self.datetime_parser.parse_datetimes(text)
+                    start = datetimes[self.config.start_key]
+                    end = datetimes.get(self.config.end_key)
 
                     logger.debug(f"start: {repr(start)}, end: {repr(end)}")
 
@@ -212,7 +131,9 @@ class FeedEventDownloader:
 
                     assert isinstance(start, datetime.datetime)
                     if start < now:
-                        logger.info("Event has already began or it's finished.")
+                        logger.info(
+                            "Event has already began or it's finished."
+                        )
                     else:
                         event_data = self._make_event(
                             entry.title, entry.link, hypertext, start, end
@@ -246,7 +167,9 @@ class GancioEventSender:
         except KeyError:
             logger.info("Sending event without an image...")
             headers = {"Content-Type": "application/json"}
-            response = requests.post(self.gancio_url, headers=headers, json=event)
+            response = requests.post(
+                self.gancio_url, headers=headers, json=event
+            )
         else:
             logger.info("Sending event with an image...")
             image_response = requests.get(image_url)
@@ -266,7 +189,9 @@ class GancioEventSender:
         logger.debug(f"Response status code: {response.status_code}")
         logger.debug(response.json())
 
-    def send_events_to_gancio(self, events: List[dict], interactive: bool = False):
+    def send_events_to_gancio(
+        self, events: List[dict], interactive: bool = False
+    ):
         """Send events to Gancio, optionally confirming each submission."""
         for event in events:
             if interactive:

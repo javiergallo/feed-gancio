@@ -10,6 +10,7 @@ from types import SimpleNamespace
 from hypothesis import given, settings, strategies as st
 import pytest
 
+import feed_gancio.datetime_parsers as datetime_parsers
 import feed_gancio.utils as utils
 from feed_gancio.models import load_models
 from feed_gancio.settings import Config
@@ -60,7 +61,7 @@ def test_flatten_hypertext_handles_generated_text(hypertext: str):
     Then:
         * The result is a string.
     """
-    assert isinstance(flatten_hypertext(hypertext), str)
+    assert isinstance(utils.flatten_hypertext(hypertext), str)
 
 
 @settings(max_examples=40)
@@ -158,7 +159,7 @@ def test_download_upcoming_events_with_generated_feed(
     with pytest.MonkeyPatch.context() as monkeypatch:
         monkeypatch.setattr(utils.feedparser, "parse", lambda feed_url: feed)
         monkeypatch.setattr(
-            utils.dateparser,
+            datetime_parsers.dateparser,
             "parse",
             lambda value, settings: datetime.datetime.fromisoformat(value),
         )
@@ -216,7 +217,7 @@ def test_send_event_to_gancio_handles_generated_payloads(
                 headers={"Content-Type": "image/png"}, content=b"image data"
             ),
         )
-        GancioEventSender(
+        utils.GancioEventSender(
             "https://example.com/api/events"
         ).send_event_to_gancio(event)
 
@@ -244,7 +245,7 @@ def test_send_events_respects_generated_confirmation_choices(
         * All events are sent when non-interactive; only approved events are
         sent otherwise.
     """
-    sender = GancioEventSender("https://example.com/api/events")
+    sender = utils.GancioEventSender("https://example.com/api/events")
     sent = []
     sender.send_event_to_gancio = sent.append
     confirmations = iter(approved for _, approved in items)
