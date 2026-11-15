@@ -44,7 +44,7 @@ default_settings = ["feed_gancio.settings:Config"]
 
 [[tool.pydantic_settings_export.generators.markdown]]
 paths = ["docs/configuration.md"]
+table_headers = ["Name", "Type", "Default", "Description"]
 
 [[tool.pydantic_settings_export.generators.dotenv]]
 paths = [".env.example"]
-
