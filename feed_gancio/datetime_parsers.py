@@ -103,8 +103,9 @@ class LlamaDatetimeParser:
         datetimes[self.config.start_key] = self.parse_datetime(
             datetime_strs[self.config.start_key]
         )
-        if self.config.end_key in datetime_strs:
+        end_datetime_str = datetime_strs.get(self.config.end_key)
+        if end_datetime_str:
             datetimes[self.config.end_key] = self.parse_datetime(
-                datetime_strs[self.config.end_key]
+                end_datetime_str
             )
         return datetimes
